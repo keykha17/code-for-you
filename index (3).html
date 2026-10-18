@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hasil</title>
+<style>
+:root {
+  --bg-color: #0f172a;
+  --calc-bg: #1e293b;
+  --display-bg: #0f172a;
+  --text-color: #f8fafc;
+  --btn-num: #334155;
+  --btn-num-hover: #475569;
+  --btn-action: #ef4444;
+  --btn-action-hover: #dc2626;
+  --btn-op: #3b82f6;
+  --btn-op-hover: #2563eb;
+  --btn-equal: #10b981;
+  --btn-equal-hover: #059669;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-color);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.calculator {
+  background-color: var(--calc-bg);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 300px;
+}
+
+.display {
+  margin-bottom: 20px;
+}
+
+#screen {
+  width: 100%;
+  height: 60px;
+  background-color: var(--display-bg);
+  border: 1px solid #334155;
+  border-radius: 10px;
+  color: var(--text-color);
+  font-size: 1.8rem;
+  text-align: right;
+  padding: 0 16px;
+  outline: none;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.btn {
+  height: 50px;
+  border: none;
+  border-radius: 10px;
+  background-color: var(--btn-num);
+  color: var(--text-color);
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  background-color: var(--btn-num-hover);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-action {
+  background-color: var(--btn-action);
+}
+
+.btn-action:hover {
+  background-color: var(--btn-action-hover);
+}
+
+.btn-op {
+  background-color: var(--btn-op);
+}
+
+.btn-op:hover {
+  background-color: var(--btn-op-hover);
+}
+
+.btn-equal {
+  background-color: var(--btn-equal);
+  grid-row: span 2;
+  height: 100%;
+}
+
+.btn-equal:hover {
+  background-color: var(--btn-equal-hover);
+}
+
+.btn-zero {
+  grid-column: span 2;
+}
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Mini</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="calculator">
+    <div class="display">
+      <input type="text" id="screen" readonly value="0">
+    </div>
+
+    <div class="buttons">
+      <button class="btn btn-action" onclick="clearScreen()">C</button>
+      <button class="btn btn-action" onclick="deleteLast()">DEL</button>
+      <button class="btn btn-op" onclick="appendOp('/')">÷</button>
+      <button class="btn btn-op" onclick="appendOp('*')">×</button>
+
+      <button class="btn" onclick="appendNum('7')">7</button>
+      <button class="btn" onclick="appendNum('8')">8</button>
+      <button class="btn" onclick="appendNum('9')">9</button>
+      <button class="btn btn-op" onclick="appendOp('-')">-</button>
+
+      <button class="btn" onclick="appendNum('4')">4</button>
+      <button class="btn" onclick="appendNum('5')">5</button>
+      <button class="btn" onclick="appendNum('6')">6</button>
+      <button class="btn btn-op" onclick="appendOp('+')">+</button>
+
+      <button class="btn" onclick="appendNum('1')">1</button>
+      <button class="btn" onclick="appendNum('2')">2</button>
+      <button class="btn" onclick="appendNum('3')">3</button>
+      <button class="btn btn-equal" onclick="calculate()">=</button>
+
+      <button class="btn btn-zero" onclick="appendNum('0')">0</button>
+      <button class="btn" onclick="appendNum('.')">.</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+<script>
+const screen = document.getElementById('screen');
+
+function appendNum(num) {
+  if (screen.value === '0' || screen.value === 'Error') {
+    screen.value = num;
+  } else {
+    screen.value += num;
+  }
+}
+
+function appendOp(op) {
+  const lastChar = screen.value.slice(-1);
+  if (['+', '-', '*', '/'].includes(lastChar)) {
+    screen.value = screen.value.slice(0, -1) + op;
+  } else {
+    screen.value += op;
+  }
+}
+
+function clearScreen() {
+  screen.value = '0';
+}
+
+function deleteLast() {
+  if (screen.value.length === 1 || screen.value === 'Error') {
+    screen.value = '0';
+  } else {
+    screen.value = screen.value.slice(0, -1);
+  }
+}
+
+function calculate() {
+  try {
+    screen.value = eval(screen.value);
+  } catch (error) {
+    screen.value = 'Error';
+  }
+}
+
+</script>
+</body>
+</html>
