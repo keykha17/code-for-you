@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EmbossNote - Catatan Ringan</title>
+    <style>
+        :root {
+            --bg-color: #e0e5ec;
+            --text-color: #444753;
+            --text-muted: #7b8596;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --accent: #4a90e2;
+            --accent-hover: #357abd;
+            --card-bg: #e0e5ec;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1f2c;
+            --text-color: #c5c8c6;
+            --text-muted: #8c95a1;
+            --shadow-light: #242a3a;
+            --shadow-dark: #10141e;
+            --accent: #5c9eff;
+            --accent-hover: #4386e8;
+            --card-bg: #1a1f2c;
+            --danger: #ff6b6b;
+            --success: #51cf66;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding-bottom: 40px;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Responsif Stabil */
+        nav {
+            display: flex;
+            flex-direction: column;
+            padding: 12px 16px;
+            background-color: var(--bg-color);
+            box-shadow: 0 4px 10px var(--shadow-dark);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .nav-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .nav-bottom {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .nav-brand svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--accent);
+        }
+
+        .nav-search {
+            flex: 1;
+            position: relative;
+        }
+
+        .nav-search input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: none;
+            outline: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+            border-radius: 12px;
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            font-size: 0.9rem;
+        }
+
+        .nav-search svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            fill: var(--text-muted);
+        }
+
+        /* Emboss Button */
+        .btn-emboss {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 14px;
+            border: none;
+            outline: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            white-space: nowrap;
+        }
+
+        .btn-emboss:hover {
+            color: var(--accent);
+        }
+
+        .btn-emboss:active {
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+        }
+
+        .btn-icon-only {
+            padding: 10px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+        }
+
+        .btn-emboss svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Container Utama */
+        .container {
+            max-width: 1100px;
+            margin: 20px auto 0;
+            padding: 0 16px;
+        }
+
+        /* Stats & Filter Bar */
+        .dashboard-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stats-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .stat-card {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: var(--bg-color);
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-card strong {
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        .categories-filter {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none; /* Firefox */
+        }
+
+        .categories-filter::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .filter-chip {
+            padding: 7px 14px;
+            border-radius: 20px;
+            border: none;
+            background: var(--bg-color);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-chip svg {
+            width: 13px;
+            height: 13px;
+            fill: currentColor;
+        }
+
+        .filter-chip.active {
+            color: var(--accent);
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), inset -2px -2px 5px var(--shadow-light);
+        }
+
+        /* Form Card */
+        .note-form-card {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .note-form-card.show {
+            display: block;
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border: none;
+            outline: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+            border-radius: 10px;
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+            font-size: 0.9rem;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        @media (min-width: 600px) {
+            .form-row {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            accent-color: var(--accent);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Notes Grid */
+        .notes-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 650px) {
+            .notes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            }
+        }
+
+        .note-card {
+            background: var(--bg-color);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            min-height: 190px;
+            border-top: 4px solid var(--card-accent, var(--accent));
+        }
+
+        .note-card.pinned {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light), 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+
+        .note-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-color);
+            word-break: break-word;
+        }
+
+        .note-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: var(--bg-color);
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+            color: var(--text-muted);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .note-body {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-bottom: 15px;
+            word-break: break-word;
+            white-space: pre-wrap;
+            flex: 1;
+        }
+
+        .note-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--shadow-dark);
+            padding-top: 10px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .note-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-action {
+            background: var(--bg-color);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+            color: var(--text-muted);
+        }
+
+        .btn-action:hover {
+            color: var(--accent);
+        }
+
+        .btn-action:active {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+        }
+
+        .btn-action.pinned-active {
+            color: var(--accent);
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);
+        }
+
+        .btn-action.delete:hover {
+            color: var(--danger);
+        }
+
+        /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--bg-color);
+            border-radius: 16px;
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        /* Color Selector */
+        .color-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .color-radio {
+            display: none;
+        }
+
+        .color-circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 2px 2px 4px var(--shadow-dark), -2px -2px 4px var(--shadow-light);
+            border: 2px solid transparent;
+            display: inline-block;
+        }
+
+        .color-radio:checked + .color-circle {
+            transform: scale(1.15);
+            box-shadow: inset 2px 2px 4px rgba(0,0,0,0.3);
+            border-color: var(--text-color);
+        }
+
+        /* Toast Notifikasi */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            padding: 10px 20px;
+            border-radius: 10px;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--success);
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <!-- Navbar -->
+    <nav>
+        <div class="nav-top">
+            <div class="nav-brand">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+                <span>EmbossNote</span>
+            </div>
+            <button class="btn-emboss btn-icon-only" onclick="toggleTheme()" title="Ganti Tema">
+                <svg id="themeIcon" viewBox="0 0 24 24">
+                    <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+                </svg>
+            </button>
+        </div>
+        <div class="nav-bottom">
+            <div class="nav-search">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Cari catatan..." oninput="handleSearch()">
+            </div>
+            <button class="btn-emboss" id="toggleFormBtn" onclick="toggleForm()">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                <span>Baru</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Content Container -->
+    <div class="container">
+
+        <!-- Dashboard & Filter Bar -->
+        <div class="dashboard-bar">
+            <div class="stats-group">
+                <div class="stat-card">
+                    <span>Total</span>
+                    <strong id="totalCount">0</strong>
+                </div>
+                <div class="stat-card">
+                    <span>Terpin</span>
+                    <strong id="pinnedCount">0</strong>
+                </div>
+            </div>
+
+            <div class="categories-filter" id="categoryFilters">
+                <button class="filter-chip active" onclick="setFilter('Semua', this)">
+                    <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4H4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+                    Semua
+                </button>
+                <button class="filter-chip" onclick="setFilter('Umum', this)">
+                    <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+                    Umum
+                </button>
+                <button class="filter-chip" onclick="setFilter('Pekerjaan', this)">
+                    <svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+                    Pekerjaan
+                </button>
+                <button class="filter-chip" onclick="setFilter('Pribadi', this)">
+                    <svg viewBox="0 0 24 24"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>
+                    Pribadi
+                </button>
+                <button class="filter-chip" onclick="setFilter('Ide', this)">
+                    <svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.28c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z"/></svg>
+                    Ide
+                </button>
+                <button class="filter-chip" onclick="setFilter('Belajar', this)">
+                    <svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                    Belajar
+                </button>
+            </div>
+        </div>
+
+        <!-- Form Tambah / Edit Catatan -->
+        <div class="note-form-card" id="noteFormCard">
+            <div class="form-header">
+                <span id="formTitleText">Buat Catatan Baru</span>
+                <button class="btn-emboss btn-icon-only" onclick="toggleForm()">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+            </div>
+            <form id="noteForm" onsubmit="saveNote(event)">
+                <input type="hidden" id="noteId">
+                <div class="form-group">
+                    <input type="text" id="noteTitleInput" class="form-control" placeholder="Judul catatan..." required>
+                </div>
+                <div class="form-group">
+                    <textarea id="noteContentInput" class="form-control" placeholder="Tulis isi catatan di sini..." required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="margin-bottom:0; flex:1;">
+                        <select id="noteCategoryInput" class="form-control">
+                            <option value="Umum">Umum</option>
+                            <option value="Pekerjaan">Pekerjaan</option>
+                            <option value="Pribadi">Pribadi</option>
+                            <option value="Ide">Ide</option>
+                            <option value="Belajar">Belajar</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <div class="color-selector">
+                            <label><input type="radio" name="noteColor" value="#4a90e2" class="color-radio" checked><span class="color-circle" style="background:#4a90e2"></span></label>
+                            <label><input type="radio" name="noteColor" value="#2ecc71" class="color-radio"><span class="color-circle" style="background:#2ecc71"></span></label>
+                            <label><input type="radio" name="noteColor" value="#e74c3c" class="color-radio"><span class="color-circle" style="background:#e74c3c"></span></label>
+                            <label><input type="radio" name="noteColor" value="#f39c12" class="color-radio"><span class="color-circle" style="background:#f39c12"></span></label>
+                            <label><input type="radio" name="noteColor" value="#9b59b6" class="color-radio"><span class="color-circle" style="background:#9b59b6"></span></label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="notePinInput"> Pin
+                        </label>
+                    </div>
+                </div>
+                <div style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 8px;">
+                    <button type="button" class="btn-emboss" onclick="toggleForm()">Batal</button>
+                    <button type="submit" class="btn-emboss" style="color: var(--accent);">Simpan</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Notes Grid List -->
+        <div class="notes-grid" id="notesGrid"></div>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <svg viewBox="0 0 24 24"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg>
+        <span id="toastText">Catatan disimpan!</span>
+    </div>
+
+    <script>
+        let notes = [];
+        try {
+            notes = JSON.parse(localStorage.getItem('emboss_notes')) || [
+                {
+                    id: 1,
+                    title: 'Selamat Datang di EmbossNote',
+                    content: 'Aplikasi catatan ringan berdesain Neumorphism 3D yang stabil dan responsif di semua ukuran layar.',
+                    category: 'Umum',
+                    color: '#4a90e2',
+                    pinned: true,
+                    date: '18 Okt 2026'
+                }
+            ];
+        } catch (e) {
+            notes = [];
+        }
+
+        let currentFilter = 'Semua';
+        let searchQuery = '';
+
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('emboss_notes', JSON.stringify(notes));
+            } catch (e) {
+                console.error("Gagal menyimpan ke localStorage", e);
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            
+            const themeIcon = document.getElementById('themeIcon');
+            if(newTheme === 'dark') {
+                themeIcon.innerHTML = '<path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>';
+            } else {
+                themeIcon.innerHTML = '<path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36l-1.06 1.06c-.39.39-.39 1.03 0 1.41.39.39 1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0z"/>';
+            }
+        }
+
+        function toggleForm() {
+            const formCard = document.getElementById('noteFormCard');
+            formCard.classList.toggle('show');
+            if(!formCard.classList.contains('show')) {
+                document.getElementById('noteForm').reset();
+                document.getElementById('noteId').value = '';
+                document.getElementById('formTitleText').innerText = 'Buat Catatan Baru';
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setFilter(category, element) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-chip').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            renderNotes();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderNotes();
+        }
+
+        function saveNote(event) {
+            event.preventDefault();
+            const id = document.getElementById('noteId').value;
+            const title = document.getElementById('noteTitleInput').value.trim();
+            const content = document.getElementById('noteContentInput').value.trim();
+            const category = document.getElementById('noteCategoryInput').value;
+            const colorInput = document.querySelector('input[name="noteColor"]:checked');
+            const color = colorInput ? colorInput.value : '#4a90e2';
+            const pinned = document.getElementById('notePinInput').checked;
+
+            const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+            const formattedDate = new Date().toLocaleDateString('id-ID', dateOptions);
+
+            if(id) {
+                notes = notes.map(note => String(note.id) === String(id) ? { ...note, title, content, category, color, pinned } : note);
+                showToast('Catatan diperbarui!');
+            } else {
+                const newNote = {
+                    id: Date.now(),
+                    title,
+                    content,
+                    category,
+                    color,
+                    pinned,
+                    date: formattedDate
+                };
+                notes.unshift(newNote);
+                showToast('Catatan ditambahkan!');
+            }
+
+            saveToLocalStorage();
+            toggleForm();
+            renderNotes();
+        }
+
+        function editNote(id) {
+            const note = notes.find(n => String(n.id) === String(id));
+            if(!note) return;
+
+            document.getElementById('noteId').value = note.id;
+            document.getElementById('noteTitleInput').value = note.title;
+            document.getElementById('noteContentInput').value = note.content;
+            document.getElementById('noteCategoryInput').value = note.category;
+            document.getElementById('notePinInput').checked = !!note.pinned;
+            
+            const colorRadio = document.querySelector(`input[name="noteColor"][value="${note.color}"]`);
+            if(colorRadio) colorRadio.checked = true;
+
+            document.getElementById('formTitleText').innerText = 'Edit Catatan';
+            document.getElementById('noteFormCard').classList.add('show');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteNote(id) {
+            if(confirm('Hapus catatan ini?')) {
+                notes = notes.filter(n => String(n.id) !== String(id));
+                saveToLocalStorage();
+                renderNotes();
+                showToast('Catatan dihapus!');
+            }
+        }
+
+        function togglePin(id) {
+            notes = notes.map(note => String(note.id) === String(id) ? { ...note, pinned: !note.pinned } : note);
+            saveToLocalStorage();
+            renderNotes();
+        }
+
+        function renderNotes() {
+            const grid = document.getElementById('notesGrid');
+            if (!grid) return;
+            
+            let filtered = notes.filter(note => {
+                const matchesCategory = currentFilter === 'Semua' || note.category === currentFilter;
+                const matchesSearch = !searchQuery || (note.title && note.title.toLowerCase().includes(searchQuery)) || (note.content && note.content.toLowerCase().includes(searchQuery));
+                return matchesCategory && matchesSearch;
+            });
+
+            filtered.sort((a, b) => (b.pinned === true) - (a.pinned === true));
+
+            const totalCountEl = document.getElementById('totalCount');
+            const pinnedCountEl = document.getElementById('pinnedCount');
+            if (totalCountEl) totalCountEl.innerText = notes.length;
+            if (pinnedCountEl) pinnedCountEl.innerText = notes.filter(n => n.pinned).length;
+
+            if(filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                        <p>Tidak ada catatan ditemukan.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(note => `
+                <div class="note-card ${note.pinned ? 'pinned' : ''}" style="--card-accent: ${escapeHtml(note.color || '#4a90e2')};">
+                    <div>
+                        <div class="note-header">
+                            <span class="note-title">${escapeHtml(note.title)}</span>
+                            <span class="note-badge">${escapeHtml(note.category)}</span>
+                        </div>
+                        <div class="note-body">${escapeHtml(note.content)}</div>
+                    </div>
+                    <div>
+                        <div class="note-footer">
+                            <span>${escapeHtml(note.date)}</span>
+                            <div class="note-actions">
+                                <button class="btn-action ${note.pinned ? 'pinned-active' : ''}" onclick="togglePin(${note.id})" title="Sematkan">
+                                    <svg viewBox="0 0 24 24"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>
+                                </button>
+                                <button class="btn-action" onclick="editNote(${note.id})" title="Edit">
+                                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                                </button>
+                                <button class="btn-action delete" onclick="deleteNote(${note.id})" title="Hapus">
+                                    <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        renderNotes();
+    </script>
+</body>
+</html>
